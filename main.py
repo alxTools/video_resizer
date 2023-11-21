@@ -17,13 +17,13 @@ def show_gui(icon, item):
 
 def exit_app(icon, item):
     icon.stop()
-    # exit(0)
+    exit(1)
 
 # System Tray Icon
 icon = pystray.Icon("video_converter", get_icon_image(), "Video Converter", 
-                    menu=pystray.Menu(
-                        item('Open', show_gui),
-                        item('Exit', exit_app)
-                    ))
+    menu=pystray.Menu(
+        item('Open Video Resizer', show_gui),
+        item('Exit', exit_app)
+    ))
 
 icon.run()

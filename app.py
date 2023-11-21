@@ -6,9 +6,14 @@ from threading import Thread
 
 running_process = None
 
+
 def convert_video(input_file, output_file, resolution, crf_value, audio_option, sample_rate, bit_depth):
+    
+    ffmpeg_path = 'ffmpeg'
+    startupinfo = subprocess.STARTUPINFO()
+    startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
     command = [
-        'ffmpeg',
+        ffmpeg_path,
         '-y',  # Overwrite existing files without asking
         '-hwaccel', 'cuda',
         '-hwaccel_output_format', 'cuda',
@@ -24,7 +29,6 @@ def convert_video(input_file, output_file, resolution, crf_value, audio_option, 
             '-b:a', '512k',  # High bitrate for fixed bitrate encoding, you can increase this if needed
             '-ar', f'{sample_rate}',  # Set audio sample rate to 48kHz
     ])
-
 
     # Add resolution-specific options
     if resolution == "4K":
@@ -60,7 +64,14 @@ def convert_video(input_file, output_file, resolution, crf_value, audio_option, 
     
     # Execute the command and return the subprocess
     global running_process
-    running_process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
+    running_process =subprocess.Popen(
+    command,
+    startupinfo=startupinfo,
+    stdout=subprocess.PIPE,
+    stderr=subprocess.PIPE,
+    text=True,
+    universal_newlines=True
+)
     return running_process
 
 def stop_conversion():
@@ -91,7 +102,7 @@ def gui_mode():
                 Thread(target=update_console, args=(process, console), daemon=True).start()
 
     root = tk.Tk()
-    root.title("Video Converter")
+    root.title("Video Resizer Tool for Topaz Video Ai (post-script)")
     root.configure(bg='#2e2e2e')
     root.geometry("600x400")  # Adjust the size of the window as needed
 
@@ -123,22 +134,22 @@ def gui_mode():
     select_button = tk.Button(root, text="Select Video", command=open_file_dialog, **button_style)
     select_button.pack()
 
-    # Stop Button
-    stop_button = tk.Button(root, text="Stop Conversion", command=stop_conversion, **button_style)
-    stop_button.pack()
+    # # Stop Button
+    # stop_button = tk.Button(root, text="Stop Conversion", command=stop_conversion, **button_style)
+    # stop_button.pack()
     
     # Console Output
-    console = scrolledtext.ScrolledText(root, height=10, bg="#2e2e2e", fg="#ffffff")
+    console = scrolledtext.ScrolledText(root, height=40, bg="#2e2e2e", fg="#ffffff")
     console.pack()
 
     root.mainloop()
 
 def cli_mode(args):
-    result = convert_video(args.input, args.output, args.resolution, args.quality, args.audio, args.sample_rate, args.bit_depth)
+    result = convert_video(args.input_file, args.output_file, args.resolution, args.crf_value, args.audio_option, args.sample_rate, args.bit_depth)
     print(result)
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Convert videos to MP4 format.")
+    parser = argparse.ArgumentParser(description="Convert videos to MP4 format.", argument_default="--help")
     parser.add_argument("--input", help="Input video file path.")
     parser.add_argument("--output", help="Output video file path.")
     parser.add_argument("--quality", help="Quality level (CRF value)", default="15")

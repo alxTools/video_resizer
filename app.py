@@ -64,14 +64,7 @@ def convert_video(input_file, output_file, resolution, crf_value, audio_option, 
     
     # Execute the command and return the subprocess
     global running_process
-    running_process =subprocess.Popen(
-    command,
-    startupinfo=startupinfo,
-    stdout=subprocess.PIPE,
-    stderr=subprocess.PIPE,
-    text=True,
-    universal_newlines=True
-)
+    running_process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
     return running_process
 
 def stop_conversion():
